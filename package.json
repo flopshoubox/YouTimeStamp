@@ -4,7 +4,7 @@
   "description": "Web extension to show YouTube timestamp",
   "scripts": {
     "build": "webpack",
-    "start": "web-ext run --verbose -s extension/"
+    "start": "web-ext run -s extension/"
   },
   "author": "Florent PERGOUD",
   "license": "MPL-2.0",
@@ -14,11 +14,13 @@
     "babel-core": "^6.26.0",
     "babel-loader": "^7.1.2",
     "babel-preset-env": "^1.6.1",
+    "copy-webpack-plugin": "^4.3.1",
+    "graceful-fs": "^4.1.11",
     "web-ext": "1.6.0",
     "webpack": "^3.10.0"
   },
   "repository": {
-  "type": "git",
-  "url": "git://github.com/flopshoubox/YouTimeStamp.git"
+    "type": "git",
+    "url": "git://github.com/flopshoubox/YouTimeStamp.git"
   }
 }
