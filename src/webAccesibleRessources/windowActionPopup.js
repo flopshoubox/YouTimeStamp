@@ -23,8 +23,23 @@ const updateTimer = () => {
 	tsTimer.innerHTML = `${videoCurrentTime} / ${videoDuration}`;
 }
 
-try {
-	browser.runtime.sendMessage({message: "getTimeStamps" , senderScript: "actionPopUp"})
+// const updateCurrentlyPlaying = () => {
+// 	let tSDiv = document.getElementById("timeStamps");
+// 	let treeWalker = document.createTreeWalker(
+//  		document.body,
+//   		NodeFilter.SHOW_ELEMENT,
+//   		{ acceptNode: function(node) { return NodeFilter.FILTER_ACCEPT; } },
+//   		false
+// 	);
+// 	while(treeWalker.nextNode()){
+// 		if (treeWalker.currentNode.) {}
+// 	}
+// };
+
+browser.runtime.sendMessage({message: "compatibilityCheck" , senderScript: "actionPopUp"})
+.then(answer => {
+	try {
+		browser.runtime.sendMessage({message: "getTimeStamps" , senderScript: "actionPopUp"})
 		.then(message => {
 			timeStamps = message.timeStamps;
 			ytTabTitle = message.pageTitle;
@@ -36,37 +51,51 @@ try {
 			let tsSubTitle = document.getElementsByTagName("H2")[0];
 			tsSubTitle.innerHTML = ytTabTitle;
 			let tSDiv = document.getElementById("timeStamps");
-			timeStamps.forEach((timeStamp) => {
-				let tempDiv = document.createElement("div");
-				let tempImg = document.createElement("img");
-				tempImg.alt = "play";
-				tempImg.src = "play.png";
-				tempImg.height = 10;
-				tempImg.width = 10;
-				
-				let descSpan = document.createElement("span");
-				descSpan.innerHTML = ` - ${timeStamp.description}`;
-				descSpan.dataset.display = timeStamp.display;
-				descSpan.addEventListener("mouseenter", () => onMouseEnterDescription(descSpan), true);
-				descSpan.addEventListener("mouseleave", () => onMouseLeaveDescription(descSpan), true);
+			if (answer.compatible) {
+				timeStamps.forEach((timeStamp) => {
+					let tempDiv = document.createElement("div");
+					let tempImg = document.createElement("img");
+					tempImg.alt = "play";
+					tempImg.src = "play.png";
+					tempImg.height = 10;
+					tempImg.width = 10;
+					
+					let descSpan = document.createElement("span");
+					descSpan.innerHTML = ` - ${timeStamp.description}`;
+					descSpan.dataset.display = timeStamp.display;
+					descSpan.addEventListener("mouseenter", () => onMouseEnterDescription(descSpan), true);
+					descSpan.addEventListener("mouseleave", () => onMouseLeaveDescription(descSpan), true);
 
-				tempDiv.appendChild(tempImg);
-				tempDiv.appendChild(descSpan);
-				tempDiv.dataset.timeStamp = timeStamp.url.match(/t=\d+/)[0].substring(2);
-				tempDiv.addEventListener("click", () => onLinkClick(tempDiv), true);
-				tSDiv.appendChild(tempDiv);
-		})	
-	})
-} catch (err) {
-	console.log(err);
-}
+					tempDiv.appendChild(tempImg);
+					tempDiv.appendChild(descSpan);
+					tempDiv.dataset.timeStamp = timeStamp.url.match(/t=\d+/)[0].substring(2);
+					tempDiv.addEventListener("click", () => onLinkClick(tempDiv), true);
+					tSDiv.appendChild(tempDiv);
+				})
+			}
+			else {
+				let errSpan = document.createElement("span");
+				errSpan.innerHTML = "No YouTube page compatible";
+				tSDiv.appendChild(errSpan);
+			}
+		});
+	} catch (err) {
+		console.log(err);
+	}
+});
+
+
+
+
+
 
 const timeAsker = () => {
 	browser.runtime.sendMessage({message: "getCurrentTime" , senderScript: "actionPopUp"})
-		.then( answer => {
-			videoCurrentTime = answer.videoCurrentTime;
-			updateTimer();
-		})
+	.then( answer => {
+		videoCurrentTime = answer.videoCurrentTime;
+		updateTimer();
+		updateCurrentlyPlaying();
+	})
 }
 
 window.setInterval(timeAsker, 100);

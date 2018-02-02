@@ -56,9 +56,10 @@ const tsInfosUpdater = async () => {
 const handlePageLoaded = async () => {
 	tsPageTitle = document.getElementsByTagName("H1")[0].innerHTML;
 	let tsVideoDuration = secondToDHMS(video.duration);
-	await tsInfosUpdater().then(
+	await tsInfosUpdater()
+	.then(() => {
 		browser.runtime.sendMessage({message: "timeStamps", senderScript: "content",  timeStamps: timeStamps, pageTitle: tsPageTitle, videoDuration: tsVideoDuration})
-		);
+	});
 }
 
 const timeUpdated = async () => {
