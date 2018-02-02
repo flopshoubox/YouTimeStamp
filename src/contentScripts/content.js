@@ -67,5 +67,13 @@ const timeUpdated = async () => {
 	console.log("sending curentTime");
 }
 
+const handleMessage = (request, sender, sendResponse) => {
+	switch (request.message){
+		case `setCurrentTime`:
+			video.currentTime = request.newTime;
+		break;
+	}
+}
 video.addEventListener("timeupdate", timeUpdated);
 window.onload = handlePageLoaded();
+browser.runtime.onMessage.addListener(handleMessage);

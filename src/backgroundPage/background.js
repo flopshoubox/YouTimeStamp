@@ -14,14 +14,14 @@ const handleMessage = (request, sender, sendResponse) => {
 					ytTabTitle = request.pageTitle;
 					videoDuration = request.videoDuration;
 					activeYoutubeTabID = sender.tab.id;
-
+					console.log(`Youtube tab Id : ${activeYoutubeTabID}`);
 				break;
 				case `currentTime`:
 					videoCurrentTime = request.currentTime;
-					console.log(`videoCurrentTime = ${videoCurrentTime}`);
 				break;
 			}
 		break;
+		
 		case `actionPopUp`:
 			switch (request.message){
 				case `getTimeStamps`:
@@ -29,6 +29,10 @@ const handleMessage = (request, sender, sendResponse) => {
 				break;
 				case `getCurrentTime`:
 					sendResponse({videoCurrentTime: videoCurrentTime})
+				break;
+				case `setCurrentTime`:
+					console.log(`Youtube tab Id : ${activeYoutubeTabID}, newTime = ${request.newTime} `);
+					browser.tabs.sendMessage(activeYoutubeTabID,{message: "setCurrentTime", newTime: request.newTime});
 				break;
 			}
 		break;

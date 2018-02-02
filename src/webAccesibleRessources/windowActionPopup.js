@@ -5,15 +5,17 @@ let ytTabTitle;
 let videoCurrentTime;
 let videoDuration;
 
-const onClick = (url) => {
-	console.log(url);
+const onLinkClick = (element) => {
+	browser.runtime.sendMessage({message: "setCurrentTime" , senderScript: "actionPopUp", newTime: element.dataset.timeStamp})
 }
 
-const onMouseEnter = (element) => {
+const onMouseEnterDescription = (element) => {
 	element.style.color = 'blue';
+	element.innerHTML = `${element.innerHTML} - ${element.dataset.display}`;
 }
-const onMouseLeave = (element) => {
+const onMouseLeaveDescription = (element) => {
 	element.style.color = 'black';
+	element.innerHTML = element.innerHTML.replace(` - ${element.dataset.display}`, "");
 }
 
 const updateTimer = () => {
@@ -22,7 +24,7 @@ const updateTimer = () => {
 }
 
 try {
-	let answer = browser.runtime.sendMessage({message: "getTimeStamps" , senderScript: "actionPopUp"})
+	browser.runtime.sendMessage({message: "getTimeStamps" , senderScript: "actionPopUp"})
 		.then(message => {
 			timeStamps = message.timeStamps;
 			ytTabTitle = message.pageTitle;
@@ -37,19 +39,21 @@ try {
 			timeStamps.forEach((timeStamp) => {
 				let tempDiv = document.createElement("div");
 				let tempImg = document.createElement("img");
-				tempImg.alt = timeStamp.display;
+				tempImg.alt = "play";
 				tempImg.src = "play.png";
 				tempImg.height = 10;
 				tempImg.width = 10;
-
+				
 				let descSpan = document.createElement("span");
 				descSpan.innerHTML = ` - ${timeStamp.description}`;
-				
+				descSpan.dataset.display = timeStamp.display;
+				descSpan.addEventListener("mouseenter", () => onMouseEnterDescription(descSpan), true);
+				descSpan.addEventListener("mouseleave", () => onMouseLeaveDescription(descSpan), true);
+
 				tempDiv.appendChild(tempImg);
 				tempDiv.appendChild(descSpan);
-				tempDiv.addEventListener("click", () => onClick(timeStamp.url), true);
-				tempDiv.addEventListener("mouseenter", () => onMouseEnter(tempDiv), true);
-				tempDiv.addEventListener("mouseleave", () => onMouseLeave(tempDiv), true);
+				tempDiv.dataset.timeStamp = timeStamp.url.match(/t=\d+/)[0].substring(2);
+				tempDiv.addEventListener("click", () => onLinkClick(tempDiv), true);
 				tSDiv.appendChild(tempDiv);
 		})	
 	})
