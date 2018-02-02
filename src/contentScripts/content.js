@@ -1,4 +1,9 @@
-let timestampsText;
+let video = document.getElementsByTagName("video")[0];
+let tsPageTitle;
+let tStampURL;
+const timeStamps = [];
+let timeStampDisplay;
+let tSDescription;
 window.alert("toto");
 
 const secondToDHMS = (seconds) => {
@@ -36,23 +41,31 @@ const secondToDHMS = (seconds) => {
 	return timeStampDisplay;
 }
 
-const timeStampsGetter = async () => {
-	let descriptionHTML = document.getElementById("description").innerHTML,
-		timestamps = [];
+const tsInfosUpdater = async () => {
+	let descriptionHTML = document.getElementById("description").innerHTML;
 	await descriptionHTML.split("\n").forEach(line => {
 		if (line.includes(`href="/${location.href.substring("https://www.youtube.com/".length, location.href.length)}&amp;t=`)){
-			let tStampURL = `https://www.youtube.com${line.match(/\/watch\?v=[A-Za-z0-9-_]+&amp;t=\d+s/)[0]}`;
-			let timeStampDisplay = secondToDHMS(tStampURL.match(/t=\d+/)[0].substring(2));
-			let tSDescription = line.replace(/<a.*<\/a>/, "").replace(/^[^a-zA-Z]+/,"");
-			timestamps.push({url: tStampURL, display: timeStampDisplay, description: tSDescription});
+			tStampURL = `${line.match(/\/watch\?v=[A-Za-z0-9-_]+&amp;t=\d+s/)[0]}`;
+			timeStampDisplay = secondToDHMS(tStampURL.match(/t=\d+/)[0].substring(2));
+			tSDescription = line.replace(/\[*<a.*<\/a>]*/, "").replace(/^[^a-zA-Z]+/,"");
+			timeStamps.push({url: tStampURL, display: timeStampDisplay, description: tSDescription});
 		}
 	});
-
-	console.log(timestamps);
-	await browser.runtime.sendMessage({message: timestamps, senderScript: content});
 }
 
 const handlePageLoaded = async () => {
-	await timeStampsGetter();
+	tsPageTitle = document.getElementsByTagName("H1")[0].innerHTML;
+	let tsVideoDuration = secondToDHMS(video.duration);
+	await tsInfosUpdater().then(
+		browser.runtime.sendMessage({message: "timeStamps", senderScript: "content",  timeStamps: timeStamps, pageTitle: tsPageTitle, videoDuration: tsVideoDuration})
+		);
 }
+
+const timeUpdated = async () => {
+	let currentTime = secondToDHMS(video.currentTime);
+	browser.runtime.sendMessage({message: "currentTime", senderScript: "content", currentTime: currentTime});
+	console.log("sending curentTime");
+}
+
+video.addEventListener("timeupdate", timeUpdated);
 window.onload = handlePageLoaded();
