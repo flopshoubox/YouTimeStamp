@@ -4,7 +4,10 @@ let tStampURL;
 const timeStamps = [];
 let timeStampDisplay;
 let tSDescription;
-window.alert("toto");
+let choosenTab = false;
+let curentTime;
+let tsVideoDuration
+let pageLoaded = false;
 
 const secondToDHMS = (seconds) => {
 	let tsDay = Math.floor(seconds/86400);
@@ -53,28 +56,47 @@ const tsInfosUpdater = async () => {
 	});
 }
 
-const handlePageLoaded = async () => {
+const timer = async () => {
+	if (choosenTab) {
+		currentTime = secondToDHMS(video.currentTime);
+		browser.runtime.sendMessage({message: "currentTime", senderScript: "content", currentTime: currentTime});
+		if (tsPageTitle != document.getElementsByTagName("H1")[0].innerHTML) {
+			sendInfos();
+		}
+	}
+}
+
+const sendInfos = async () => {
 	tsPageTitle = document.getElementsByTagName("H1")[0].innerHTML;
-	let tsVideoDuration = secondToDHMS(video.duration);
+	tsVideoDuration = secondToDHMS(video.duration);
 	await tsInfosUpdater()
 	.then(() => {
 		browser.runtime.sendMessage({message: "timeStamps", senderScript: "content",  timeStamps: timeStamps, pageTitle: tsPageTitle, videoDuration: tsVideoDuration})
 	});
 }
 
-const timeUpdated = async () => {
-	let currentTime = secondToDHMS(video.currentTime);
-	browser.runtime.sendMessage({message: "currentTime", senderScript: "content", currentTime: currentTime});
-	console.log("sending curentTime");
+const chosen = async () => {
+	choosenTab = true;
+	await sendInfos();
+}
+
+const noMoreChosen = () => {
+	choosenTab = false;
 }
 
 const handleMessage = (request, sender, sendResponse) => {
 	switch (request.message){
+		case `choosingYou`:
+			chosen();
+		break;
+		case `noMoreYou`:
+			noMoreChosen();
+		break;
 		case `setCurrentTime`:
 			video.currentTime = request.newTime;
+			video.play();
 		break;
 	}
 }
-video.addEventListener("timeupdate", timeUpdated);
-window.onload = handlePageLoaded();
+window.setInterval(timer, 100);
 browser.runtime.onMessage.addListener(handleMessage);

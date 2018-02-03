@@ -1,9 +1,10 @@
 console.log("hello");
 
 let timeStamps = [];
-let ytTabTitle;
-let videoCurrentTime;
-let videoDuration;
+let ytTabTitle = "";
+let videoCurrentTime = 0;
+let videoDuration = 0;
+let hasSelectedPage = false;
 
 const onLinkClick = (element) => {
 	browser.runtime.sendMessage({message: "setCurrentTime" , senderScript: "actionPopUp", newTime: element.dataset.timeStamp})
@@ -36,22 +37,28 @@ const updateTimer = () => {
 // 	}
 // };
 
+const pageUpdate = () => {
+	
+}
+
 browser.runtime.sendMessage({message: "compatibilityCheck" , senderScript: "actionPopUp"})
-.then(answer => {
-	try {
-		browser.runtime.sendMessage({message: "getTimeStamps" , senderScript: "actionPopUp"})
-		.then(message => {
-			timeStamps = message.timeStamps;
-			ytTabTitle = message.pageTitle;
-			videoCurrentTime = message.videoCurrentTime;
-			videoDuration = message.videoDuration;
-			})
-		.then(() => {
-			updateTimer();
-			let tsSubTitle = document.getElementsByTagName("H2")[0];
-			tsSubTitle.innerHTML = ytTabTitle;
-			let tSDiv = document.getElementById("timeStamps");
-			if (answer.compatible) {
+.then(compatibilityCheck => {
+	hasSelectedPage = compatibilityCheck.hasSelectedPage;
+	let tSDiv = document.getElementById("timeStamps");
+	let tsSubTitle = document.getElementsByTagName("H2")[0];
+
+	if (hasSelectedPage) {
+		if (compatibilityCheck.compatible) {
+			browser.runtime.sendMessage({message: "getTimeStamps" , senderScript: "actionPopUp"})
+			.then(message => {
+				timeStamps = message.timeStamps;
+				ytTabTitle = message.pageTitle;
+				videoCurrentTime = message.videoCurrentTime;
+				videoDuration = message.videoDuration;
+				})
+			.then(() => {
+				updateTimer();
+				tsSubTitle.innerHTML = ytTabTitle;
 				timeStamps.forEach((timeStamp) => {
 					let tempDiv = document.createElement("div");
 					let tempImg = document.createElement("img");
@@ -72,30 +79,30 @@ browser.runtime.sendMessage({message: "compatibilityCheck" , senderScript: "acti
 					tempDiv.addEventListener("click", () => onLinkClick(tempDiv), true);
 					tSDiv.appendChild(tempDiv);
 				})
-			}
-			else {
-				let errSpan = document.createElement("span");
-				errSpan.innerHTML = "No YouTube page compatible";
-				tSDiv.appendChild(errSpan);
-			}
-		});
-	} catch (err) {
-		console.log(err);
+			});
+		}
+		else{
+			let errSpan = document.createElement("span");
+			errSpan.innerHTML = "Waiting";
+			tsSubTitle.appendChild(errSpan);
+		}
+	}
+	else{
+		let errSpan = document.createElement("span");
+		errSpan.innerHTML = "No page selected";
+		tsSubTitle.appendChild(errSpan);
 	}
 });
 
 
-
-
-
-
 const timeAsker = () => {
-	browser.runtime.sendMessage({message: "getCurrentTime" , senderScript: "actionPopUp"})
-	.then( answer => {
-		videoCurrentTime = answer.videoCurrentTime;
-		updateTimer();
-		updateCurrentlyPlaying();
-	})
+	if (hasSelectedPage) {
+		browser.runtime.sendMessage({message: "getCurrentTime" , senderScript: "actionPopUp"})
+		.then( answer => {
+			videoCurrentTime = answer.videoCurrentTime;
+			updateTimer();
+		});
+	}	
 }
 
 window.setInterval(timeAsker, 100);

@@ -13,6 +13,12 @@
 	    "default_popup": "/webAccesibleRessources/windowActionPopup.html"
 	 },
 
+	"page_action" : {
+	    "browser_style": true,
+	    "default_icon" : "/pageAction/playNav-grey.png",
+	    "default_title": "YouTimeStamp"
+	 },
+
 	 "content_scripts": [
 	    {
 	      "matches": ["https://www.youtube.com/watch?v=*"],
@@ -27,7 +33,7 @@
 	"name": "YouTimeStamp",
 
 	"version": "0.1",
-	
+
 	"permissions": [
     "webRequest",
     "<all_urls>",
