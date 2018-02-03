@@ -37,10 +37,6 @@ const updateTimer = () => {
 // 	}
 // };
 
-const pageUpdate = () => {
-	
-}
-
 browser.runtime.sendMessage({message: "compatibilityCheck" , senderScript: "actionPopUp"})
 .then(compatibilityCheck => {
 	hasSelectedPage = compatibilityCheck.hasSelectedPage;
