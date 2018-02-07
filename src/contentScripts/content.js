@@ -46,16 +46,19 @@ const secondToDHMS = (seconds) => {
 }
 
 const tsInfosUpdater = async () => {
-	let descriptionHTML = document.getElementById("description").innerHTML;
-	timeStamps.length = 0;
-	await descriptionHTML.split("\n").forEach(line => {
-		if (line.includes(`href="/${location.href.substring("https://www.youtube.com/".length, location.href.length)}&amp;t=`)){
-			tStampURL = `${line.match(/\/watch\?v=[A-Za-z0-9-_]+&amp;t=\d+s/)[0]}`;
-			timeStampDisplay = secondToDHMS(tStampURL.match(/t=\d+/)[0].substring(2));
-			tSDescription = line.replace(/\[*<a.*<\/a>]*/, "").replace(/^[^a-zA-Z]+/,"");
-			timeStamps.push({url: tStampURL, display: timeStampDisplay, description: tSDescription});
-		}
-	});
+	try{
+
+		let descriptionHTML = document.getElementsByTagName("yt-formatted-string").description.innerHTML;
+		timeStamps.length = 0;
+		await descriptionHTML.split("\n").forEach(line => {
+			if (line.includes(`href="/${location.href.substring("https://www.youtube.com/".length, location.href.length)}&amp;t=`)){
+				tStampURL = `${line.match(/\/watch\?v=[A-Za-z0-9-_]+&amp;t=\d+s/)[0]}`;
+				timeStampDisplay = secondToDHMS(tStampURL.match(/t=\d+/)[0].substring(2));
+				tSDescription = line.replace(/\[*<a.*<\/a>]*/, "").replace(/^[^a-zA-Z]+/,"");
+				timeStamps.push({url: tStampURL, display: timeStampDisplay, description: tSDescription});
+			}
+		});
+	}catch(e){console.log(e)}
 }
 
 const timer = async () => {
