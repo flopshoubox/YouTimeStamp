@@ -22,5 +22,8 @@
   "repository": {
     "type": "git",
     "url": "git://github.com/flopshoubox/YouTimeStamp.git"
+  },
+  "dependencies": {
+    "material-design-lite": "^1.3.0"
   }
 }

@@ -41,7 +41,7 @@ browser.runtime.sendMessage({message: "compatibilityCheck" , senderScript: "acti
 .then(compatibilityCheck => {
 	hasSelectedPage = compatibilityCheck.hasSelectedPage;
 	let tSDiv = document.getElementById("timeStamps");
-	let tsSubTitle = document.getElementsByTagName("H2")[0];
+	let tsSubTitle = document.getElementById("videoTitle");
 
 	if (hasSelectedPage) {
 		if (compatibilityCheck.compatible) {

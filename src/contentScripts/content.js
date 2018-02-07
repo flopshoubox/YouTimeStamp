@@ -9,6 +9,7 @@ let curentTime;
 let tsVideoDuration
 let pageLoaded = false;
 
+
 const secondToDHMS = (seconds) => {
 	let tsDay = Math.floor(seconds/86400);
 	let tsHour = Math.floor((seconds - (tsDay * 86400)) / 3600);
@@ -46,6 +47,7 @@ const secondToDHMS = (seconds) => {
 
 const tsInfosUpdater = async () => {
 	let descriptionHTML = document.getElementById("description").innerHTML;
+	timeStamps.length = 0;
 	await descriptionHTML.split("\n").forEach(line => {
 		if (line.includes(`href="/${location.href.substring("https://www.youtube.com/".length, location.href.length)}&amp;t=`)){
 			tStampURL = `${line.match(/\/watch\?v=[A-Za-z0-9-_]+&amp;t=\d+s/)[0]}`;
@@ -60,9 +62,6 @@ const timer = async () => {
 	if (choosenTab) {
 		currentTime = secondToDHMS(video.currentTime);
 		browser.runtime.sendMessage({message: "currentTime", senderScript: "content", currentTime: currentTime});
-		if (tsPageTitle != document.getElementsByTagName("H1")[0].innerHTML) {
-			sendInfos();
-		}
 	}
 }
 
@@ -96,7 +95,11 @@ const handleMessage = (request, sender, sendResponse) => {
 			video.currentTime = request.newTime;
 			video.play();
 		break;
+		case `getInfos`:
+			sendInfos();
+			console.log(timeStamps);
+		break;
 	}
 }
-window.setInterval(timer, 100);
+setInterval(timer, 100);
 browser.runtime.onMessage.addListener(handleMessage);

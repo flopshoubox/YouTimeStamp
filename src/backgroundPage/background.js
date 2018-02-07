@@ -26,7 +26,8 @@ const handleUpdated = (tabId, changeInfo, tabInfo) => {
 			browser.pageAction.show(tabId);
 			if (activeYoutubeTabID == tabId) {
 				browser.pageAction.setIcon({tabId: tabId, path: "../pageAction/playNav-blue.png"});
-				browser.tabs.sendMessage(activeYoutubeTabID,{message: "newInfos"});			}
+				browser.tabs.sendMessage(activeYoutubeTabID,{message: "newInfos"});
+			}
 		}
 		else{
 			if(activeYoutubeTabID == tabId){
@@ -82,7 +83,9 @@ const handleMessage = (request, sender, sendResponse) => {
 					sendResponse({compatible: compatiblePages, hasSelectedPage: hasSelectedPage});
 				break;
 				case `getTimeStamps`:
-					sendResponse({timeStamps: timeStamps, pageTitle: ytTabTitle, videoCurrentTime: videoCurrentTime  ,videoDuration: videoDuration, compatiblePages: compatiblePages});
+					browser.tabs.sendMessage(activeYoutubeTabID, {message: "getInfos"})
+					.then(sendResponse({timeStamps: timeStamps, pageTitle: ytTabTitle, videoCurrentTime: videoCurrentTime  ,videoDuration: videoDuration, compatiblePages: compatiblePages}));
+				
 				break;
 				case `getCurrentTime`:
 					sendResponse({videoCurrentTime: videoCurrentTime})
