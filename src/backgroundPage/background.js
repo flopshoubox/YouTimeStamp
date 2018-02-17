@@ -4,9 +4,12 @@ let timeStamps,
 	activeYoutubeTabID,
 	ytTabTitle,
 	videoCurrentTime,
+	currentlyPlayingDesc,
 	videoDuration,
 	compatiblePages,
-	hasSelectedPage;
+	hasSelectedPage,
+	currentlyPlayingNumber;
+
 
 
 const initVar = () => {
@@ -14,14 +17,16 @@ const initVar = () => {
 	activeYoutubeTabID = -1,
 	ytTabTitle = "",
 	videoCurrentTime = 0,
+	currentlyPlayingDesc = "",
 	videoDuration = 0,
 	compatiblePages = false,
 	hasSelectedPage = false;
+	currentlyPlayingNumber = 0;
+
 }
 initVar();
 const handleUpdated = (tabId, changeInfo, tabInfo) => {
 	if (changeInfo.url) {
-		console.log("url has changed");
 		if (tabInfo.url.match(/https:\/\/www\.youtube\.com\/watch\?v=/)) {
 			browser.pageAction.show(tabId);
 			if (activeYoutubeTabID == tabId) {
@@ -57,6 +62,8 @@ const handlePageActionClick = (tab) => {
 	//changing icon and favicon
 }
 
+
+
 const handleMessage = (request, sender, sendResponse) => {
 	switch (request.senderScript){
 		case `content`:
@@ -70,9 +77,13 @@ const handleMessage = (request, sender, sendResponse) => {
 						compatiblePages = true;
 						browser.browserAction.setBadgeText({text: ":)"});
 					}
-					break;
+				break;
 				case `currentTime`:
 					videoCurrentTime = request.currentTime;
+				break;
+				case `currentlyPlaying`:
+					currentlyPlayingDesc = request.currentlyPlayingDesc;
+					currentlyPlayingNumber = request.currentlyPlayingNumber;
 				break;
 			}
 		break;
@@ -87,8 +98,8 @@ const handleMessage = (request, sender, sendResponse) => {
 					.then(sendResponse({timeStamps: timeStamps, pageTitle: ytTabTitle, videoCurrentTime: videoCurrentTime  ,videoDuration: videoDuration, compatiblePages: compatiblePages}));
 				
 				break;
-				case `getCurrentTime`:
-					sendResponse({videoCurrentTime: videoCurrentTime})
+				case `getCurrentState`:
+					sendResponse({videoCurrentTime: videoCurrentTime, currentlyPlayingDesc: currentlyPlayingDesc, currentlyPlayingNumber: currentlyPlayingNumber})
 				break;
 				case `setCurrentTime`:
 					browser.tabs.sendMessage(activeYoutubeTabID,{message: "setCurrentTime", newTime: request.newTime});

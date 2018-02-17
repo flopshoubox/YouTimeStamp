@@ -1,24 +1,60 @@
-<!DOCTYPE html>
-
-<html>
+<!doctype html>
+<html lang="en">
   <head>
-    <meta charset="utf-8">
-    <link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
-    <link rel="stylesheet" href="https://www.w3schools.com/lib/w3-theme-teal.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">    
+      <link rel="stylesheet" href="https://gitcdn.link/repo/Chalarangelo/mini.css/master/dist/mini-nord.min.css">
+      <link href="https://fonts.googleapis.com/icon?family=Material+Icons"
+      rel="stylesheet">
   </head>
+  <body>
+    <header>
+      <label for="drawer-checkbox" class="button drawer-toggle persistent"></label>
+      <a href="#" class="logo">YouTimeStamps</a>
+    </header>
 
-<body>
-  <div class="w3-bar w3-theme w3-large">
-    <div id="videoTitle" class="w3-bar-item"></div>
-  </div>
-  <div class="w3-bar w3-theme">
-    <div id="timer" cclass="w3-bar-item"></div>
-  </div>
-  <div class="w3-panel w3-white w3-card w3-display-container">
-    <div id="timeStamps"></div>
-  </div>
-  <script src="windowActionPopup.js"></script>
-</body>
+    <input type="checkbox" id="drawer-checkbox">
+    <div class="drawer persistent">
+      <label for="drawer-checkbox" class="close"></label>
+      <a href="#" class="button">Home</a>
+    </div>
+    <div class="card large">
+      <div class="section">
+        <h3 id="videoTitle">
+          <small id="playList"></small>
+        </h3>
+      </div>
+    </div>
 
-</html> 
+    <div class="card large">
+      <div class="section">
+        <button class="small">
+          <i class="material-icons">fast_rewind</i>
+        </button>
+        <button class="small">
+          <i class="material-icons">skip_previous</i>
+        </button>
+        <button class="small">
+          <i class="material-icons">play_arrow</i>
+        </button>
+        <button class="small">
+          <i class="material-icons">skip_next</i>
+        </button>
+        <button class="small">
+          <i class="material-icons">fast_forward</i>
+        </button>
+        <p id="timer">00:00</p>
+      </div>
+    </div>
+    <div class="card large">
+      <div class="section">
+        <h3>TimeStamps</h3>
+        <p id="timeStamps"></p>
+      </div>
+    </div>
+    
+    <script src="windowActionPopup.js"></script>
+  </body>
+</html>
+
+

@@ -6,9 +6,11 @@ let timeStampDisplay;
 let tSDescription;
 let choosenTab = false;
 let curentTime;
-let tsVideoDuration
+let currentlyPlaying = "";
+let tsVideoDuration;
+let currentlyPlayingNumber = 0;
 let pageLoaded = false;
-
+console.log("coucou");
 
 const secondToDHMS = (seconds) => {
 	let tsDay = Math.floor(seconds/86400);
@@ -47,15 +49,15 @@ const secondToDHMS = (seconds) => {
 
 const tsInfosUpdater = async () => {
 	try{
-
 		let descriptionHTML = document.getElementsByTagName("yt-formatted-string").description.innerHTML;
 		timeStamps.length = 0;
 		await descriptionHTML.split("\n").forEach(line => {
 			if (line.includes(`href="/${location.href.substring("https://www.youtube.com/".length, location.href.length)}&amp;t=`)){
 				tStampURL = `${line.match(/\/watch\?v=[A-Za-z0-9-_]+&amp;t=\d+s/)[0]}`;
-				timeStampDisplay = secondToDHMS(tStampURL.match(/t=\d+/)[0].substring(2));
+				tSSeconds = tStampURL.match(/t=\d+/)[0].substring(2);
+				tSDisplay = secondToDHMS(tSSeconds);
 				tSDescription = line.replace(/\[*<a.*<\/a>]*/, "").replace(/^[^a-zA-Z]+/,"");
-				timeStamps.push({url: tStampURL, display: timeStampDisplay, description: tSDescription});
+				timeStamps.push({url: tStampURL, seconds: tSSeconds, display: tSDisplay, description: tSDescription});
 			}
 		});
 	}catch(e){console.log(e)}
@@ -66,6 +68,17 @@ const timer = async () => {
 		currentTime = secondToDHMS(video.currentTime);
 		browser.runtime.sendMessage({message: "currentTime", senderScript: "content", currentTime: currentTime});
 	}
+}
+
+const currentlyPlayingUpdate = async () => {
+	for (let i = 0; i < timeStamps.length; i++) {
+		if (video.currentTime  < timeStamps[i].seconds) {
+			currentlyPlayingDesc = timeStamps[i-1].description;
+			currentlyPlayingNumber = i;
+			break;
+		}
+	}
+	browser.runtime.sendMessage({message: "currentlyPlaying", senderScript: "content", currentlyPlayingDesc: currentlyPlayingDesc, currentlyPlayingNumber: currentlyPlayingNumber});
 }
 
 const sendInfos = async () => {
@@ -100,9 +113,10 @@ const handleMessage = (request, sender, sendResponse) => {
 		break;
 		case `getInfos`:
 			sendInfos();
-			console.log(timeStamps);
 		break;
 	}
 }
+tsInfosUpdater();
 setInterval(timer, 100);
+setInterval(currentlyPlayingUpdate, 3000);
 browser.runtime.onMessage.addListener(handleMessage);
