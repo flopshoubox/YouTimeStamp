@@ -31,16 +31,68 @@ const windowUpdater = () => {
 		}
 		document.getElementById(`tsLiNum${currentlyPlayingNumber}`).style.color = 'red';
 	}
-	
 }
 
 browser.runtime.sendMessage({message: "compatibilityCheck" , senderScript: "actionPopUp"})
 .then(compatibilityCheck => {
 	hasSelectedPage = compatibilityCheck.hasSelectedPage;
 	let tsContent = document.getElementById("timeStamps");
-	let tsSubTitle = document.getElementById("videoTitle");
+	
+	let titleCardDiv = document.createElement("div");
+	titleCardDiv.classList.add('card');
+	titleCardDiv.classList.add('large');
+	let titleDiv = document.createElement("div");
+	titleDiv.classList.add("section");
+	let titleHThree = document.createElement("h3");
+	titleHThree.id = "title";
+	let subtitle = document.createElement("small");
+	subtitle.id = "subtitle";
+	titleHThree.appendChild(subtitle);
+	titleDiv.appendChild(titleHThree);
+	titleCardDiv.appendChild(titleDiv);
+	document.body.appendChild(titleCardDiv);
+
 	if (hasSelectedPage) {
+		let buttonsCardDiv = document.createElement("div");
+		buttonsCardDiv.classList.add('card');
+		buttonsCardDiv.classList.add('large');
+		let buttonsDiv = document.createElement("div");
+		buttonsDiv.classList.add("section");
+		buttonsDiv.id = "controlButtons";
+		let buttonsToCreate = ["fast_rewind","skip_previous","play_arrow","skip_next","fast_forward"]
+		for (let i = 0; i < buttonsToCreate.length; i++) {
+			let button = document.createElement("button");
+			button.classList.add('small');
+			let iTag = document.createElement('i');
+			iTag.classList.add('material-icons');
+			iTag.innerHTML = buttonsToCreate[i];
+			button.appendChild(iTag);
+			buttonsDiv.appendChild(button);
+		}
+		let pTag = document.createElement('p');
+		pTag.id = "timer";
+		pTag.innerHTML = "00:00";
+		buttonsDiv.appendChild(pTag);
+		buttonsCardDiv.appendChild(buttonsDiv);
+		document.body.appendChild(buttonsCardDiv);
+
 		if (compatibilityCheck.compatible) {
+			let tsCardDiv = document.createElement("div");
+			tsCardDiv.classList.add('card');
+			tsCardDiv.classList.add('large');
+			let tsDiv = document.createElement("div");
+			tsDiv.classList.add("section");
+			let tsHThree = document.createElement("h3");
+			tsHThree.innerHTML = "Time stamps";
+			let tsP = document.createElement("p");
+			tsP.id = "timeStamps";
+			tsDiv.appendChild(tsHThree);
+			tsDiv.appendChild(tsP);
+			tsCardDiv.appendChild(tsDiv);
+			document.body.appendChild(tsCardDiv);
+
+
+
 			browser.runtime.sendMessage({message: "getTimeStamps" , senderScript: "actionPopUp"})
 			.then(message => {
 				timeStamps = message.timeStamps;
@@ -50,7 +102,7 @@ browser.runtime.sendMessage({message: "compatibilityCheck" , senderScript: "acti
 				})
 			.then(() => {
 				windowUpdater();
-				tsSubTitle.textContent = ytTabTitle;
+				document.getElementById("title").textContent = ytTabTitle;
 				let tempOl = document.createElement("ol");
 				let i = 0;
 				timeStamps.forEach((timeStamp) => {
@@ -66,7 +118,7 @@ browser.runtime.sendMessage({message: "compatibilityCheck" , senderScript: "acti
 					tempLi.addEventListener("click", () => onLinkClick(tempLi), true);
 					tempOl.appendChild(tempLi);
 				});
-				tsContent.appendChild(tempOl);
+				document.getElementById("timeStamps").appendChild(tempOl);
 			});
 		}
 		else{
@@ -92,7 +144,7 @@ const timerAsker = () => {
 			currentlyPlayingNumber = answer.currentlyPlayingNumber;
 			windowUpdater();
 		});
-	}	
+	}
 }
 
 window.setInterval(timerAsker, 100);
