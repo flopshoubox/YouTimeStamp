@@ -1,13 +1,13 @@
 let video = document.getElementsByTagName("video")[0];
-let tsPageTitle;
+let pageTitle;
 let tStampURL;
 const timeStamps = [];
 let timeStampDisplay;
 let tSDescription;
 let choosenTab = false;
 let curentTime;
-let currentlyPlaying = "";
-let tsVideoDuration;
+let currentlyPlayingDesc = "";
+let videoDuration;
 let currentlyPlayingNumber = 0;
 let pageLoaded = false;
 console.log("coucou");
@@ -71,22 +71,29 @@ const timer = async () => {
 }
 
 const currentlyPlayingUpdate = async () => {
-	for (let i = 0; i < timeStamps.length; i++) {
-		if (video.currentTime  < timeStamps[i].seconds) {
-			currentlyPlayingDesc = timeStamps[i-1].description;
-			currentlyPlayingNumber = i;
-			break;
+	pageTitle = document.getElementsByTagName("H1")[0].textContent;
+	videoDuration = await secondToDHMS(video.duration);
+	let compatibility = false;
+	if (timeStamps.length != 0) {
+		for (let i = 0; i < timeStamps.length; i++) {
+			if (video.currentTime  < timeStamps[i].seconds) {
+				currentlyPlayingDesc = timeStamps[i-1].description;
+				currentlyPlayingNumber = i;
+				break;
+			}
 		}
 	}
-	browser.runtime.sendMessage({message: "currentlyPlaying", senderScript: "content", currentlyPlayingDesc: currentlyPlayingDesc, currentlyPlayingNumber: currentlyPlayingNumber});
+	else{
+		currentlyPlayingNumber = 0;
+		currentlyPlayingDesc = "";
+	}
+	browser.runtime.sendMessage({message: "currentlyPlaying", senderScript: "content", compatibility: compatibility, currentlyPlayingDesc: currentlyPlayingDesc, currentlyPlayingNumber: currentlyPlayingNumber, pageTitle: pageTitle, videoDuration: videoDuration});
 }
 
 const sendInfos = async () => {
-	tsPageTitle = document.getElementsByTagName("H1")[0].innerHTML;
-	tsVideoDuration = secondToDHMS(video.duration);
 	await tsInfosUpdater()
 	.then(() => {
-		browser.runtime.sendMessage({message: "timeStamps", senderScript: "content",  timeStamps: timeStamps, pageTitle: tsPageTitle, videoDuration: tsVideoDuration})
+		browser.runtime.sendMessage({message: "timeStamps", senderScript: "content",  timeStamps: timeStamps, pageTitle: pageTitle})
 	});
 }
 
@@ -118,5 +125,5 @@ const handleMessage = (request, sender, sendResponse) => {
 }
 tsInfosUpdater();
 setInterval(timer, 100);
-setInterval(currentlyPlayingUpdate, 3000);
+setInterval(currentlyPlayingUpdate, 1000);
 browser.runtime.onMessage.addListener(handleMessage);

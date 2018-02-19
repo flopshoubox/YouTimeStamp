@@ -2,7 +2,7 @@ console.log("background");
 
 let timeStamps,
 	activeYoutubeTabID,
-	ytTabTitle,
+	pageTitle,
 	videoCurrentTime,
 	currentlyPlayingDesc,
 	videoDuration,
@@ -15,7 +15,7 @@ let timeStamps,
 const initVar = () => {
 	timeStamps = [],
 	activeYoutubeTabID = -1,
-	ytTabTitle = "",
+	pageTitle = "",
 	videoCurrentTime = 0,
 	currentlyPlayingDesc = "",
 	videoDuration = 0,
@@ -70,8 +70,7 @@ const handleMessage = (request, sender, sendResponse) => {
 			switch (request.message){
 				case `timeStamps`:
 					timeStamps = request.timeStamps;
-					ytTabTitle = request.pageTitle;
-					videoDuration = request.videoDuration;
+					pageTitle = request.pageTitle;
 					activeYoutubeTabID = sender.tab.id;
 					if (timeStamps.length > 0) {
 						compatiblePages = true;
@@ -84,6 +83,8 @@ const handleMessage = (request, sender, sendResponse) => {
 				case `currentlyPlaying`:
 					currentlyPlayingDesc = request.currentlyPlayingDesc;
 					currentlyPlayingNumber = request.currentlyPlayingNumber;
+					videoDuration = request.videoDuration;
+					pageTitle = request.pageTitle;
 				break;
 			}
 		break;
@@ -95,11 +96,11 @@ const handleMessage = (request, sender, sendResponse) => {
 				break;
 				case `getTimeStamps`:
 					browser.tabs.sendMessage(activeYoutubeTabID, {message: "getInfos"})
-					.then(sendResponse({timeStamps: timeStamps, pageTitle: ytTabTitle, videoCurrentTime: videoCurrentTime  ,videoDuration: videoDuration, compatiblePages: compatiblePages}));
+					.then(sendResponse({timeStamps: timeStamps, pageTitle: pageTitle, compatiblePages: compatiblePages}));
 				
 				break;
 				case `getCurrentState`:
-					sendResponse({videoCurrentTime: videoCurrentTime, currentlyPlayingDesc: currentlyPlayingDesc, currentlyPlayingNumber: currentlyPlayingNumber})
+					sendResponse({videoCurrentTime: videoCurrentTime, videoDuration: videoDuration, currentlyPlayingDesc: currentlyPlayingDesc, currentlyPlayingNumber: currentlyPlayingNumber, pageTitle: pageTitle})
 				break;
 				case `setCurrentTime`:
 					browser.tabs.sendMessage(activeYoutubeTabID,{message: "setCurrentTime", newTime: request.newTime});
