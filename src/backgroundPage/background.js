@@ -2,11 +2,11 @@ console.log("background");
 
 let timeStamps,
 	activeYoutubeTabID,
-	pageTitle,
+	videoTitle,
 	videoCurrentTime,
 	currentlyPlayingDesc,
 	videoDuration,
-	compatiblePages,
+	compatiblePage,
 	hasSelectedPage,
 	currentlyPlayingNumber;
 
@@ -15,14 +15,13 @@ let timeStamps,
 const initVar = () => {
 	timeStamps = [],
 	activeYoutubeTabID = -1,
-	pageTitle = "",
+	videoTitle = "",
 	videoCurrentTime = 0,
 	currentlyPlayingDesc = "",
 	videoDuration = 0,
-	compatiblePages = false,
+	compatiblePage = false,
 	hasSelectedPage = false;
 	currentlyPlayingNumber = 0;
-
 }
 initVar();
 const handleUpdated = (tabId, changeInfo, tabInfo) => {
@@ -31,52 +30,57 @@ const handleUpdated = (tabId, changeInfo, tabInfo) => {
 			browser.pageAction.show(tabId);
 			if (activeYoutubeTabID == tabId) {
 				browser.pageAction.setIcon({tabId: tabId, path: "../pageAction/playNav-blue.png"});
-				browser.tabs.sendMessage(activeYoutubeTabID,{message: "newInfos"});
+				hasTimeStampsCheck();
 			}
 		}
 		else{
-			if(activeYoutubeTabID == tabId){
-				browser.tabs.sendMessage(activeYoutubeTabID,{message: "noMoreYou"});
-				browser.browserAction.setBadgeText({text: ""});
+			if (activeYoutubeTabID == tabId){
 				initVar();
+				browser.browserAction.setBadgeText({text: ''});
 			}
 		}
 	}
 }
-// 
-const handlePageActionClick = (tab) => {
-	if (activeYoutubeTabID != tab.id) {
-		browser.tabs.sendMessage(tab.id,{message: "choosingYou"});
-		browser.pageAction.setIcon({tabId: tab.id, path: "../pageAction/playNav-blue.png"});
-		browser.tabs.sendMessage(activeYoutubeTabID,{message: "noMoreYou"});
-		browser.pageAction.setIcon({tabId: activeYoutubeTabID, path: "../pageAction/playNav-grey.png"});
-		activeYoutubeTabID = tab.id;
-		hasSelectedPage = true;
+
+const hasTimeStampsCheck = async () => {
+	let answer = await browser.tabs.sendMessage(activeYoutubeTabID, {message: "getTimeStamps"});
+	timeStamps.length = 0;
+	timeStamps = answer.timeStamps;
+	if (timeStamps.length > 0) {
+		compatiblePage = true;
+		browser.browserAction.setBadgeText({text: ":)"});
 	}
-	else{
-		browser.tabs.sendMessage(activeYoutubeTabID,{message: "noMoreYou"});
-		browser.pageAction.setIcon({tabId: activeYoutubeTabID, path: "../pageAction/playNav-grey.png"});
-		initVar();
+	else {
+		compatiblePage = false;
+		browser.browserAction.setBadgeText({text: ''});
 	}
-	
-	//changing icon and favicon
+	return compatiblePage;
 }
 
+const handlePageActionClick = async (tab) => {
+	if (activeYoutubeTabID != tab.id) {
+		browser.tabs.sendMessage(activeYoutubeTabID,{message: "noMoreYou"});
+		browser.pageAction.setIcon({tabId: activeYoutubeTabID, path: "../pageAction/playNav-grey.png"});
 
+		browser.tabs.sendMessage(tab.id,{message: "choosingYou"});
+		browser.pageAction.setIcon({tabId: tab.id, path: "../pageAction/playNav-blue.png"});
+		activeYoutubeTabID = tab.id;
+		hasSelectedPage = true;
+		await hasTimeStampsCheck();
+	}
+	else{
+		browser.tabs.sendMessage(tab.id,{message: "noMoreYou"});
+		browser.pageAction.setIcon({tabId: tab.id, path: "../pageAction/playNav-grey.png"});
+		initVar();
+		browser.browserAction.setBadgeText({text: ''});
+	}
+	//changing icon and favicon
+}
 
 const handleMessage = (request, sender, sendResponse) => {
 	switch (request.senderScript){
 		case `content`:
 			switch (request.message){
-				case `timeStamps`:
-					timeStamps = request.timeStamps;
-					pageTitle = request.pageTitle;
-					activeYoutubeTabID = sender.tab.id;
-					if (timeStamps.length > 0) {
-						compatiblePages = true;
-						browser.browserAction.setBadgeText({text: ":)"});
-					}
-				break;
 				case `currentTime`:
 					videoCurrentTime = request.currentTime;
 				break;
@@ -84,7 +88,7 @@ const handleMessage = (request, sender, sendResponse) => {
 					currentlyPlayingDesc = request.currentlyPlayingDesc;
 					currentlyPlayingNumber = request.currentlyPlayingNumber;
 					videoDuration = request.videoDuration;
-					pageTitle = request.pageTitle;
+					videoTitle = request.videoTitle;
 				break;
 			}
 		break;
@@ -92,15 +96,29 @@ const handleMessage = (request, sender, sendResponse) => {
 		case `actionPopUp`:
 			switch (request.message){
 				case `compatibilityCheck`:
-					sendResponse({compatible: compatiblePages, hasSelectedPage: hasSelectedPage});
+					hasTimeStampsCheck()
+					.then(sendResponse({compatible: compatiblePage, hasSelectedPage: hasSelectedPage}));
+				break;
+				case `getNavInfos`:
+					sendResponse(browser.tabs.sendMessage(activeYoutubeTabID, {message: "getNavInfos"}));
 				break;
 				case `getTimeStamps`:
-					browser.tabs.sendMessage(activeYoutubeTabID, {message: "getInfos"})
-					.then(sendResponse({timeStamps: timeStamps, pageTitle: pageTitle, compatiblePages: compatiblePages}));
-				
+					browser.tabs.sendMessage(activeYoutubeTabID, {message: "getTimeStamps"})
+					.then((answer) => {
+						timeStamps = answer.timeStamps;
+						if (timeStamps.length > 0) {
+							compatiblePage = true;
+							browser.browserAction.setBadgeText({text: ":)"});
+						}
+						else {
+							compatiblePage = false;
+							browser.browserAction.setBadgeText({text: ""});
+						}
+					});
+					sendResponse({timeStamps: timeStamps});
 				break;
-				case `getCurrentState`:
-					sendResponse({videoCurrentTime: videoCurrentTime, videoDuration: videoDuration, currentlyPlayingDesc: currentlyPlayingDesc, currentlyPlayingNumber: currentlyPlayingNumber, pageTitle: pageTitle})
+				case `getTimerInfos`:
+					sendResponse(browser.tabs.sendMessage(activeYoutubeTabID, {message: "getTimerInfos"}));
 				break;
 				case `setCurrentTime`:
 					browser.tabs.sendMessage(activeYoutubeTabID,{message: "setCurrentTime", newTime: request.newTime});

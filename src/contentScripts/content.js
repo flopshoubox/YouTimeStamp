@@ -1,11 +1,11 @@
 let video = document.getElementsByTagName("video")[0];
-let pageTitle;
+let videoTitle;
 let tStampURL;
 const timeStamps = [];
 let timeStampDisplay;
 let tSDescription;
 let choosenTab = false;
-let curentTime;
+let videoCurrentTime;
 let currentlyPlayingDesc = "";
 let videoDuration;
 let currentlyPlayingNumber = 0;
@@ -63,15 +63,8 @@ const tsInfosUpdater = async () => {
 	}catch(e){console.log(e)}
 }
 
-const timer = async () => {
-	if (choosenTab) {
-		currentTime = secondToDHMS(video.currentTime);
-		browser.runtime.sendMessage({message: "currentTime", senderScript: "content", currentTime: currentTime});
-	}
-}
-
-const currentlyPlayingUpdate = async () => {
-	pageTitle = document.getElementsByTagName("H1")[0].textContent;
+const updateTimerInfos = async () => {
+	currentTime = secondToDHMS(video.currentTime);
 	videoDuration = await secondToDHMS(video.duration);
 	let compatibility = false;
 	if (timeStamps.length != 0) {
@@ -87,43 +80,40 @@ const currentlyPlayingUpdate = async () => {
 		currentlyPlayingNumber = 0;
 		currentlyPlayingDesc = "";
 	}
-	browser.runtime.sendMessage({message: "currentlyPlaying", senderScript: "content", compatibility: compatibility, currentlyPlayingDesc: currentlyPlayingDesc, currentlyPlayingNumber: currentlyPlayingNumber, pageTitle: pageTitle, videoDuration: videoDuration});
-}
-
-const sendInfos = async () => {
-	await tsInfosUpdater()
-	.then(() => {
-		browser.runtime.sendMessage({message: "timeStamps", senderScript: "content",  timeStamps: timeStamps, pageTitle: pageTitle})
-	});
-}
-
-const chosen = async () => {
-	choosenTab = true;
-	await sendInfos();
-}
-
-const noMoreChosen = () => {
-	choosenTab = false;
 }
 
 const handleMessage = (request, sender, sendResponse) => {
 	switch (request.message){
 		case `choosingYou`:
-			chosen();
+			choosenTab = true;
 		break;
 		case `noMoreYou`:
-			noMoreChosen();
+			choosenTab = false;
 		break;
 		case `setCurrentTime`:
 			video.currentTime = request.newTime;
 			video.play();
 		break;
-		case `getInfos`:
-			sendInfos();
+		case `getTimeStamps`:
+			tsInfosUpdater()
+			.then(sendResponse({timeStamps: timeStamps}));
+		break;
+		case `getTimerInfos`:
+			updateTimerInfos()
+			.then(sendResponse(
+				{
+					videoCurrentTime: videoCurrentTime,
+					videoDuration: videoDuration,
+					currentlyPlayingNumber: currentlyPlayingNumber,
+					currentlyPlayingDesc: currentlyPlayingDesc
+				}
+			));
+		break;
+		case `getNavInfos`:
+			videoTitle = document.getElementsByTagName("H1")[0].textContent;
+			sendResponse({videoTitle: videoTitle});
 		break;
 	}
 }
 tsInfosUpdater();
-setInterval(timer, 100);
-setInterval(currentlyPlayingUpdate, 1000);
 browser.runtime.onMessage.addListener(handleMessage);
