@@ -64,7 +64,7 @@ const tsInfosUpdater = async () => {
 }
 
 const updateTimerInfos = async () => {
-	currentTime = secondToDHMS(video.currentTime);
+	videoCurrentTime = secondToDHMS(video.currentTime);
 	videoDuration = await secondToDHMS(video.duration);
 	let compatibility = false;
 	if (timeStamps.length != 0) {
