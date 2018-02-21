@@ -130,9 +130,9 @@ const handleMessage = (request, sender, sendResponse) => {
 				case `getTimerInfos`:
 					sendResponse(browser.tabs.sendMessage(activeYoutubeTabID, {message: "getTimerInfos"}));
 				break;
-				case `buttonAction`:
+				case `action`:
 					console.log("back-Message received : action")
-					sendResponse(browser.tabs.sendMessage(activeYoutubeTabID,{message: "buttonAction", action: request.action}));
+					sendResponse(browser.tabs.sendMessage(activeYoutubeTabID,{message: "action", action: request.action}));
 				break;
 			}
 		break;

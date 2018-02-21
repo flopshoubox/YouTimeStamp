@@ -10,6 +10,7 @@ let currentlyPlayingDesc = "";
 let videoDuration;
 let currentlyPlayingNumber = 0;
 let pageLoaded = false;
+let nextVideoInfos = {} ;
 console.log("coucou");
 
 const secondToDHMS = (seconds) => {
@@ -86,18 +87,27 @@ const updateTimerInfos = async () => {
 	let compatibility = false;
 	if (timeStamps.length != 0) {
 		for (let i = 0; i < timeStamps.length; i++) {	
-			currentlyPlayingDesc = timeStamps[i].description;
 			currentlyPlayingNumber = i;
 			if (video.currentTime  < timeStamps[i].seconds) {
 				break;
 			}
 			currentlyPlayingNumber ++;
+			currentlyPlayingDesc = timeStamps[i].description;
+
 		}
 	}
 	else{
 		currentlyPlayingNumber = 0;
 		currentlyPlayingDesc = "";
 	}
+}
+
+const updateNextVideoInfos = async () => {
+	let nextVideo = document.getElementsByClassName("ytp-next-button")[0];
+	nextVideoInfos.title = nextVideo.attributes[5].nodeValue;
+	nextVideoInfos.url = nextVideo.href;
+	nextVideoInfos.preview = nextVideo.attributes[4].nodeValue;
+	console.log(nextVideoInfos);
 }
 
 const handleMessage = (request, sender, sendResponse) => {
@@ -111,7 +121,7 @@ const handleMessage = (request, sender, sendResponse) => {
 			console.log("content-Message received : noMoreYou");
 			choosenTab = false;
 		break;
-		case `buttonAction`:
+		case `action`:
 			switch(request.action.toDo){
 				case `setCurrentTime`:
 					console.log("content-Message received : setCurrentTime");
@@ -125,7 +135,19 @@ const handleMessage = (request, sender, sendResponse) => {
 				case `pause`:
 					video.pause();
 					sendResponse(video.paused);
-
+				break;
+				case `previousSong` :
+					video.currentTime = timeStamps[currentlyPlayingNumber-2].seconds;
+				break;
+				case `nextSong` :
+					video.currentTime = timeStamps[currentlyPlayingNumber].seconds;
+				break;
+				case `previousVideo` :
+					window.history.back();
+				break;
+				case `nextVideo` :
+					updateNextVideoInfos();
+					location.replace(nextVideoInfos.url);
 				break;
 			}
 		break;	

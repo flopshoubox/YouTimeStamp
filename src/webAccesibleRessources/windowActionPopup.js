@@ -8,7 +8,7 @@ let hasSelectedPage = false;
 let currentlyPlayingDesc = "";
 let currentlyPlayingNumber = 0;
 let textTitleHThree;
-let buttonCardList = [
+let fullButtonsList = [
 	{	buttonName: "skip_previous",
 	 		action: "previousVideo"},
 	{	buttonName: "fast_rewind",
@@ -17,7 +17,7 @@ let buttonCardList = [
 	 		action: "pause",
 	 		callBack: (button) => {
 	 			if (button.firstChild.innerText == "pause") { //If it's playing
-					browser.runtime.sendMessage({message: "buttonAction" , senderScript: "actionPopUp", action:{ toDo: "pause"}})
+					browser.runtime.sendMessage({message: "action" , senderScript: "actionPopUp", action:{ toDo: "pause"}})
 					.then(answer => {
 						if (answer == true) {
 							button.firstChild.innerText = "play_arrow";
@@ -25,24 +25,46 @@ let buttonCardList = [
 					});
 				}
 	 			else{
-					browser.runtime.sendMessage({message: "buttonAction" , senderScript: "actionPopUp", action:{ toDo: "play"}})
+					browser.runtime.sendMessage({message: "action" , senderScript: "actionPopUp", action:{ toDo: "play"}})
 					.then(answer => {
 						if (answer == false) {
 							button.firstChild.innerText = "pause";
 						}
 					});
-	 			}
-	 			
-	 		}},
+	 			}}},
 	{	buttonName: "fast_forward",
 	 		action: "nextSong"},
+	{	buttonName: "skip_next",
+	 		action: "nextVideo"}
+	];
+let noTsButtonsList = [
+	{	buttonName: "skip_previous",
+	 		action: "previousVideo"},
+	{	buttonName: "pause",
+	 		action: "pause",
+	 		callBack: (button) => {
+	 			if (button.firstChild.innerText == "pause") { //If it's playing
+					browser.runtime.sendMessage({message: "action" , senderScript: "actionPopUp", action:{ toDo: "pause"}})
+					.then(answer => {
+						if (answer == true) {
+							button.firstChild.innerText = "play_arrow";
+						}
+					});
+				}
+	 			else{
+					browser.runtime.sendMessage({message: "action" , senderScript: "actionPopUp", action:{ toDo: "play"}})
+					.then(answer => {
+						if (answer == false) {
+							button.firstChild.innerText = "pause";
+						}
+					});
+	 			}}},
 	{	buttonName: "skip_next",
 	 		action: "nextVideo"}
 	]
 
 const onLinkClick = (element) => {
-	console.log("popup - onLinkClick - launched");
-	browser.runtime.sendMessage({message: "action" , senderScript: "actionPopUp", action:{ toDo: "setCurrentTime", newTime: element.dataset.timeStamp}})
+	
 }
 
 const onMouseEnterDescription = (element) => {
@@ -62,6 +84,7 @@ const buttonsCardCreator = (buttonsToCreate) => {
 	buttonsCardDiv.classList.add('card');
 	buttonsCardDiv.classList.add('large');
 	let buttonsDiv = document.createElement("div");
+	buttonsDiv.style[`text-align`] = "center"; 
 	buttonsDiv.classList.add("section");
 	buttonsDiv.id = "controlButtons";
 	for (let i = 0; i < buttonsToCreate.length; i++) {
@@ -73,7 +96,7 @@ const buttonsCardCreator = (buttonsToCreate) => {
 		iTag.innerText = buttonsToCreate[i].buttonName;
 		button.appendChild(iTag);
 		button.addEventListener("click", () => {
-			browser.runtime.sendMessage({message: "buttonAction" , senderScript: "actionPopUp", action:{ toDo: buttonsToCreate[i].action}})
+			browser.runtime.sendMessage({message: "action" , senderScript: "actionPopUp", action:{ toDo: buttonsToCreate[i].action}})
 			.then(answer => {
 				if (answer == true) {
 					if (buttonsToCreate[i].hasOwnProperty('callBack')) {
@@ -86,8 +109,14 @@ const buttonsCardCreator = (buttonsToCreate) => {
 	}
 	let timerPTag = document.createElement('p');
 	timerPTag.id = "timer";
-	timerPTag.innerHTML = "00:00";
+	timerPTag.innerText = "00:00";
+	timerPTag.style[`text-align`] = "center"; 
+	let currentSongPTag = document.createElement('p');
+	currentSongPTag.id = "currentSong";
+	currentSongPTag.innerHTML = "";
+	currentSongPTag.style[`text-align`] = "center"; 
 	buttonsDiv.appendChild(timerPTag);
+	buttonsDiv.appendChild(currentSongPTag);
 	buttonsCardDiv.appendChild(buttonsDiv);
 	document.body.appendChild(buttonsCardDiv);
 }
@@ -109,8 +138,10 @@ const timerInfosGetter = () => {
 const timerUpdater = () => {
 	console.log("popup - timerUpdater - launched");
 	let tsTimer = document.getElementById("timer");
+	tsTimer.textContent = `${videoCurrentTime} / ${videoDuration}`;
 	if (currentlyPlayingNumber != 0) {
-		tsTimer.textContent = `${videoCurrentTime} / ${videoDuration} -> "${currentlyPlayingNumber} - ${currentlyPlayingDesc}"`;
+		let currentSongPTag = document.getElementById("currentSong");
+		currentSongPTag.innerHTML = `${currentlyPlayingNumber} - ${currentlyPlayingDesc}`;
 		let elementList = document.getElementsByClassName("tsListElement");
 		for (let i = 0; i < elementList.length; i++) {
 			if (elementList[i].style.color != "blue") {
@@ -119,10 +150,6 @@ const timerUpdater = () => {
 		}
 		document.getElementById(`tsLiNum${currentlyPlayingNumber}`).style.color = 'red';
 	}
-	else{
-		tsTimer.textContent = `${videoCurrentTime} / ${videoDuration}`;
-	}
-	document.getElementById("pause").firstChild.innerText = videoIsPaused ? "play_arrow" : "pause" ;
 }
 
 const titleCardCreator = () => {
@@ -136,10 +163,8 @@ const titleCardCreator = () => {
 	titleHThree.id = "title";
 	textTitleHThree = document.createTextNode(" "); 
 	titleHThree.appendChild(textTitleHThree);
-	let subtitlePart = document.createElement("small");
+	let subtitlePart = document.createElement("h4");
 	subtitlePart.id = "subtitle";
-	let textsubtitlePart = document.createTextNode(" ");
-	subtitlePart.appendChild(textsubtitlePart);
 	titleHThree.appendChild(subtitlePart);
 	titleDiv.appendChild(titleHThree);
 	titleCardDiv.appendChild(titleDiv);
@@ -159,7 +184,7 @@ const titleUpdater = (inputText) => {
 
 const subTitleUpdater = (inputText) => {
 	console.log("popup - subTitleUpdater - launched");
-	document.getElementById("subtitle").textContent = inputText;
+	document.getElementById("subtitle").innerHTML = inputText;
 }
 
 const tsCardCreator = () => {
@@ -202,7 +227,10 @@ const tsUpdater = async () => {
 		tempLi.classList.add('tsListElement');
 		tempLi.addEventListener("mouseenter", () => onMouseEnterDescription(tempLi), true);
 		tempLi.addEventListener("mouseleave", () => onMouseLeaveDescription(tempLi), true);
-		tempLi.addEventListener("click", () => onLinkClick(tempLi), true);
+		tempLi.addEventListener("click", () => {
+			console.log("popup - onLinkClick - launched");
+			browser.runtime.sendMessage({message: "action" , senderScript: "actionPopUp", action:{ toDo: "setCurrentTime", newTime: tempLi.dataset.timeStamp}})
+		}, true);
 		tempOl.appendChild(tempLi);
 	});
 	let currentTsp = document.getElementById("timeStamps");
@@ -232,8 +260,8 @@ const windowLoader = async () => {
 		console.log("titleUpdater");
 		titleUpdater(videoTitle);
 		console.log("buttonsCardCreator");
-		buttonsCardCreator(buttonCardList);
 		if (compatibilityCheck.compatible) {
+			buttonsCardCreator(fullButtonsList);
 			console.log("tsCardCreator");
 			tsCardCreator();
 			console.log("tsUpdater");
@@ -242,7 +270,7 @@ const windowLoader = async () => {
 		}
 		else{
 			console.log("subTitleUpdater");
-			subTitleUpdater("This tab has no timeStamps");
+			buttonsCardCreator(noTsButtonsList);
 		}
 	}
 	else{
@@ -258,10 +286,13 @@ window.setInterval(() => {
 	timerUpdater();}
 	, 100);
 window.setInterval(() => {
+	document.getElementById("pause").firstChild.innerText = videoIsPaused ? "play_arrow" : "pause" ;
+}, 1000);
+window.setInterval(() => {
 	navInfosGetter()
 	.then(() => {
 		titleUpdater(videoTitle);
 	})
 	tsGetter()
 	.then(() => {tsUpdater()});
-},3000)
+},3000);
