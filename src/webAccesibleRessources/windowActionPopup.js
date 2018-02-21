@@ -65,7 +65,6 @@ const timerInfosGetter = () => {
 
 const timerUpdater = () => {
 	console.log("popup - timerUpdater - launched");
-
 	let tsTimer = document.getElementById("timer");
 	if (currentlyPlayingNumber != 0) {
 		tsTimer.textContent = `${videoCurrentTime} / ${videoDuration} -> "${currentlyPlayingNumber} - ${currentlyPlayingDesc}"`;
@@ -162,14 +161,17 @@ const tsUpdater = async () => {
 		tempLi.addEventListener("click", () => onLinkClick(tempLi), true);
 		tempOl.appendChild(tempLi);
 	});
-	let tsp = document.getElementById("timeStamps");
-	if (tsp.hasChildNodes()) {
-		console.log("hasChildNodes");
-		tsp.replaceChild(tsp.firstChild, tempOl);
+	let currentTsp = document.getElementById("timeStamps");
+	if (currentTsp.hasChildNodes()) {
+		console.log("has childNodes");
+		console.log(currentTsp);
+		console.log(currentTsp.firstChild);
+		console.log(tempOl);
+		currentTsp.replaceChild(tempOl,currentTsp.firstChild);
 	}
 	else{
-		console.log("hasChildNodes");
-		tsp.appendChild(tempOl);
+		console.log("don't has childNodes");
+		currentTsp.appendChild(tempOl);
 	}
 }
 
