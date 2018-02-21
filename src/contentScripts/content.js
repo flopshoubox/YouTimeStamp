@@ -13,6 +13,7 @@ let pageLoaded = false;
 console.log("coucou");
 
 const secondToDHMS = (seconds) => {
+	console.log("content - secondToDHMS - launched");
 	let tsDay = Math.floor(seconds/86400);
 	let tsHour = Math.floor((seconds - (tsDay * 86400)) / 3600);
 	let tsMin = Math.floor((seconds - (tsDay * 86400) - (tsHour * 3600)) / 60);
@@ -48,32 +49,49 @@ const secondToDHMS = (seconds) => {
 }
 
 const tsInfosUpdater = async () => {
+	console.log("content - tsInfosUpdater - launched");
 	try{
-		let descriptionHTML = document.getElementsByTagName("yt-formatted-string").description.innerHTML;
-		timeStamps.length = 0;
-		await descriptionHTML.split("\n").forEach(line => {
-			if (line.includes(`href="/${location.href.substring("https://www.youtube.com/".length, location.href.length)}&amp;t=`)){
-				tStampURL = `${line.match(/\/watch\?v=[A-Za-z0-9-_]+&amp;t=\d+s/)[0]}`;
-				tSSeconds = tStampURL.match(/t=\d+/)[0].substring(2);
-				tSDisplay = secondToDHMS(tSSeconds);
-				tSDescription = line.replace(/\[*<a.*<\/a>]*/, "").replace(/^[^a-zA-Z]+/,"");
-				timeStamps.push({url: tStampURL, seconds: tSSeconds, display: tSDisplay, description: tSDescription});
+		while(!(document.getElementsByTagName("yt-formatted-string").hasOwnProperty('description'))){
+			while(!(document.getElementsByTagName("yt-formatted-string").description.hasOwnProperty('innerHTML'))){
+				while(document.getElementsByTagName("yt-formatted-string").description.innerHTML.length == 0){
+				}
 			}
-		});
+		}
+		let descriptionHTML = document.getElementsByTagName("yt-formatted-string").description.innerHTML;
+		console.log(`descriptionHTML : ${descriptionHTML.split("\n")}`);
+		timeStamps.length = 0;
+		if (descriptionHTML) {
+			console.log(`Has descriptionHTML`);
+			descriptionHTML.split("\n").forEach(line => {
+				if (line.includes(`href="/${location.href.substring("https://www.youtube.com/".length, location.href.length)}&amp;t=`)){
+					tStampURL = `${line.match(/\/watch\?v=[A-Za-z0-9-_]+&amp;t=\d+s/)[0]}`;
+					tSSeconds = tStampURL.match(/t=\d+/)[0].substring(2);
+					tSDisplay = secondToDHMS(tSSeconds);
+					tSDescription = line.replace(/\[*<a.*<\/a>]*/, "").replace(/^[^a-zA-Z]+/,"");
+					timeStamps.push({url: tStampURL, seconds: tSSeconds, display: tSDisplay, description: tSDescription});
+					console.log(`${timeStamps}`);
+				}
+			})
+		}
+		
 	}catch(e){console.log(e)}
+	console.log("timeStamps updated :");
+	console.log(timeStamps);
 }
 
 const updateTimerInfos = async () => {
+	console.log("content - updateTimerInfos - launched");
 	videoCurrentTime = secondToDHMS(video.currentTime);
 	videoDuration = await secondToDHMS(video.duration);
 	let compatibility = false;
 	if (timeStamps.length != 0) {
-		for (let i = 0; i < timeStamps.length; i++) {
+		for (let i = 0; i < timeStamps.length; i++) {	
+			currentlyPlayingDesc = timeStamps[i].description;
+			currentlyPlayingNumber = i;
 			if (video.currentTime  < timeStamps[i].seconds) {
-				currentlyPlayingDesc = timeStamps[i-1].description;
-				currentlyPlayingNumber = i;
 				break;
 			}
+			currentlyPlayingNumber ++;
 		}
 	}
 	else{
@@ -83,22 +101,28 @@ const updateTimerInfos = async () => {
 }
 
 const handleMessage = (request, sender, sendResponse) => {
+
 	switch (request.message){
 		case `choosingYou`:
+			console.log("content-Message received : choosingYou");
 			choosenTab = true;
 		break;
 		case `noMoreYou`:
+			console.log("content-Message received : noMoreYou");
 			choosenTab = false;
 		break;
 		case `setCurrentTime`:
+			console.log("content-Message received : setCurrentTime");
 			video.currentTime = request.newTime;
 			video.play();
 		break;
 		case `getTimeStamps`:
+			console.log("content-Message received : getTimeStamps");
 			tsInfosUpdater()
 			.then(sendResponse({timeStamps: timeStamps}));
 		break;
 		case `getTimerInfos`:
+			console.log("content-Message received : getTimerInfos");
 			updateTimerInfos()
 			.then(sendResponse(
 				{
@@ -110,10 +134,10 @@ const handleMessage = (request, sender, sendResponse) => {
 			));
 		break;
 		case `getNavInfos`:
+			console.log("content-Message received : getNavInfos");
 			videoTitle = document.getElementsByTagName("H1")[0].textContent;
 			sendResponse({videoTitle: videoTitle});
 		break;
 	}
 }
-tsInfosUpdater();
 browser.runtime.onMessage.addListener(handleMessage);
