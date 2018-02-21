@@ -103,7 +103,7 @@ const handleMessage = (request, sender, sendResponse) => {
 		case `actionPopUp`:
 			switch (request.message){
 				case `compatibilityCheck`:
-				console.log("back-Message received : compatibilityCheck");
+					console.log("back-Message received : compatibilityCheck");
 					hasTimeStampsCheck()
 					.then(sendResponse({compatible: compatiblePage, hasSelectedPage: hasSelectedPage}));
 				break;
@@ -130,9 +130,9 @@ const handleMessage = (request, sender, sendResponse) => {
 				case `getTimerInfos`:
 					sendResponse(browser.tabs.sendMessage(activeYoutubeTabID, {message: "getTimerInfos"}));
 				break;
-				case `setCurrentTime`:
-					console.log("back-Message received : setCurrentTime");
-					browser.tabs.sendMessage(activeYoutubeTabID,{message: "setCurrentTime", newTime: request.newTime});
+				case `buttonAction`:
+					console.log("back-Message received : action")
+					sendResponse(browser.tabs.sendMessage(activeYoutubeTabID,{message: "buttonAction", action: request.action}));
 				break;
 			}
 		break;

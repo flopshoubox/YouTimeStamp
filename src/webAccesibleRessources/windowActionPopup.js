@@ -8,10 +8,41 @@ let hasSelectedPage = false;
 let currentlyPlayingDesc = "";
 let currentlyPlayingNumber = 0;
 let textTitleHThree;
+let buttonCardList = [
+	{	buttonName: "skip_previous",
+	 		action: "previousVideo"},
+	{	buttonName: "fast_rewind",
+	 		action: "previousSong" },
+	{	buttonName: "pause",
+	 		action: "pause",
+	 		callBack: (button) => {
+	 			if (button.firstChild.innerText == "pause") { //If it's playing
+					browser.runtime.sendMessage({message: "buttonAction" , senderScript: "actionPopUp", action:{ toDo: "pause"}})
+					.then(answer => {
+						if (answer == true) {
+							button.firstChild.innerText = "play_arrow";
+						}
+					});
+				}
+	 			else{
+					browser.runtime.sendMessage({message: "buttonAction" , senderScript: "actionPopUp", action:{ toDo: "play"}})
+					.then(answer => {
+						if (answer == false) {
+							button.firstChild.innerText = "pause";
+						}
+					});
+	 			}
+	 			
+	 		}},
+	{	buttonName: "fast_forward",
+	 		action: "nextSong"},
+	{	buttonName: "skip_next",
+	 		action: "nextVideo"}
+	]
 
 const onLinkClick = (element) => {
 	console.log("popup - onLinkClick - launched");
-	browser.runtime.sendMessage({message: "setCurrentTime" , senderScript: "actionPopUp", newTime: element.dataset.timeStamp})
+	browser.runtime.sendMessage({message: "action" , senderScript: "actionPopUp", action:{ toDo: "setCurrentTime", newTime: element.dataset.timeStamp}})
 }
 
 const onMouseEnterDescription = (element) => {
@@ -36,10 +67,21 @@ const buttonsCardCreator = (buttonsToCreate) => {
 	for (let i = 0; i < buttonsToCreate.length; i++) {
 		let button = document.createElement("button");
 		button.classList.add('small');
+		button.id = buttonsToCreate[i].buttonName;
 		let iTag = document.createElement('i');
 		iTag.classList.add('material-icons');
-		iTag.innerHTML = buttonsToCreate[i];
+		iTag.innerText = buttonsToCreate[i].buttonName;
 		button.appendChild(iTag);
+		button.addEventListener("click", () => {
+			browser.runtime.sendMessage({message: "buttonAction" , senderScript: "actionPopUp", action:{ toDo: buttonsToCreate[i].action}})
+			.then(answer => {
+				if (answer == true) {
+					if (buttonsToCreate[i].hasOwnProperty('callBack')) {
+						buttonsToCreate[i].callBack(button);
+					}
+				}
+			})
+		}, true);
 		buttonsDiv.appendChild(button);
 	}
 	let timerPTag = document.createElement('p');
@@ -59,6 +101,7 @@ const timerInfosGetter = () => {
 			currentlyPlayingDesc = answer.currentlyPlayingDesc;
 			currentlyPlayingNumber = answer.currentlyPlayingNumber;
 			videoDuration = answer.videoDuration;
+			videoIsPaused = answer.videoIsPaused;
 		});
 	}
 }
@@ -79,6 +122,7 @@ const timerUpdater = () => {
 	else{
 		tsTimer.textContent = `${videoCurrentTime} / ${videoDuration}`;
 	}
+	document.getElementById("pause").firstChild.innerText = videoIsPaused ? "play_arrow" : "pause" ;
 }
 
 const titleCardCreator = () => {
@@ -188,7 +232,7 @@ const windowLoader = async () => {
 		console.log("titleUpdater");
 		titleUpdater(videoTitle);
 		console.log("buttonsCardCreator");
-		buttonsCardCreator(["fast_rewind","skip_previous","play_arrow","skip_next","fast_forward"]);
+		buttonsCardCreator(buttonCardList);
 		if (compatibilityCheck.compatible) {
 			console.log("tsCardCreator");
 			tsCardCreator();
@@ -220,4 +264,4 @@ window.setInterval(() => {
 	})
 	tsGetter()
 	.then(() => {tsUpdater()});
-},2000)
+},3000)

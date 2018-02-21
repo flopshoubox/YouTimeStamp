@@ -111,11 +111,24 @@ const handleMessage = (request, sender, sendResponse) => {
 			console.log("content-Message received : noMoreYou");
 			choosenTab = false;
 		break;
-		case `setCurrentTime`:
-			console.log("content-Message received : setCurrentTime");
-			video.currentTime = request.newTime;
-			video.play();
-		break;
+		case `buttonAction`:
+			switch(request.action.toDo){
+				case `setCurrentTime`:
+					console.log("content-Message received : setCurrentTime");
+					video.currentTime = request.action.newTime;
+					video.play();
+				break;
+				case `play`:
+					video.play();
+					sendResponse((video.paused));
+				break;
+				case `pause`:
+					video.pause();
+					sendResponse(video.paused);
+
+				break;
+			}
+		break;	
 		case `getTimeStamps`:
 			console.log("content-Message received : getTimeStamps");
 			tsInfosUpdater()
@@ -129,7 +142,8 @@ const handleMessage = (request, sender, sendResponse) => {
 					videoCurrentTime: videoCurrentTime,
 					videoDuration: videoDuration,
 					currentlyPlayingNumber: currentlyPlayingNumber,
-					currentlyPlayingDesc: currentlyPlayingDesc
+					currentlyPlayingDesc: currentlyPlayingDesc,
+					videoIsPaused: video.paused
 				}
 			));
 		break;
