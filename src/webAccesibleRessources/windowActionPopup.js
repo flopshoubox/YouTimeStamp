@@ -79,12 +79,12 @@ const onLinkClick = (element) => {
 const onMouseEnterDescription = (element) => {
 	console.log("popup - onMouseEnterDescription - launched");
 	element.style.color = "blue";
-	element.innerHTML = `${element.innerHTML} - ${element.dataset.display}`;
+	element.innerText = `${element.innerText} - ${element.dataset.display}`;
 }
 const onMouseLeaveDescription = (element) => {
 	console.log("popup - onMouseLeaveDescription - launched");
 	element.style.color = "black";
-	element.innerHTML = element.textContent.replace(` - ${element.dataset.display}`, "");
+	element.innerText = element.textContent.replace(` - ${element.dataset.display}`, "");
 }
 
 const buttonsCardCreator = (buttonsToCreate) => {
@@ -123,7 +123,7 @@ const buttonsCardCreator = (buttonsToCreate) => {
 	timerPTag.style[`text-align`] = "center"; 
 	let currentSongPTag = document.createElement('p');
 	currentSongPTag.id = "currentSong";
-	currentSongPTag.innerHTML = "";
+	currentSongPTag.innerText = "";
 	currentSongPTag.style[`text-align`] = "center"; 
 	buttonsDiv.appendChild(timerPTag);
 	buttonsDiv.appendChild(currentSongPTag);
@@ -151,7 +151,7 @@ const timerUpdater = () => {
 	tsTimer.textContent = `${videoCurrentTime} / ${videoDuration}`;
 	if (currentlyPlayingNumber != 0) {
 		let currentSongPTag = document.getElementById("currentSong");
-		currentSongPTag.innerHTML = `${currentlyPlayingNumber} - ${currentlyPlayingDesc}`;
+		currentSongPTag.innerText = `${currentlyPlayingNumber} - ${currentlyPlayingDesc}`;
 		let elementList = document.getElementsByClassName("tsListElement");
 		for (let i = 0; i < elementList.length; i++) {
 			if (elementList[i].style.color != "blue") {
@@ -176,8 +176,9 @@ const titleCardCreator = () => {
 	titleHThree.appendChild(textTitleHThree);
 	let subtitlePart = document.createElement("h4");
 	subtitlePart.id = "subtitle";
-	titleHThree.appendChild(subtitlePart);
 	titleDiv.appendChild(titleHThree);
+	titleDiv.appendChild(subtitlePart);
+
 	titleCardDiv.appendChild(titleDiv);
 	document.body.appendChild(titleCardDiv);
 }
@@ -195,7 +196,7 @@ const titleUpdater = (inputText) => {
 
 const subTitleUpdater = (inputText) => {
 	console.log("popup - subTitleUpdater - launched");
-	document.getElementById("subtitle").innerHTML = inputText;
+	document.getElementById("subtitle").textContent = inputText;
 }
 
 const tsCardCreator = (title) => {
@@ -264,6 +265,74 @@ const tsUpdater = async () => {
 	}
 }
 
+const footerCreator = async () => {
+	let footer = document.createElement("footer");
+		footer.classList.add("footer");
+	let divContainer = document.createElement("div");
+		divContainer.classList.add("container");
+	let divContent = document.createElement("div");
+		divContent.classList.add("content");
+		divContent.classList.add("has-text-centered");
+	
+	let paragraphOne = document.createElement("p");
+	let strongPart = document.createElement("strong");
+		strongPart.textContent = "YouTimeStamp";
+	paragraphOne.appendChild(strongPart);
+	let textOne = document.createTextNode(" by ");
+	paragraphOne.appendChild(textOne);
+	let linkedInLink = document.createElement("a");
+	linkedInLink.href = "https://fr.linkedin.com/in/florent-pergoud-3213a5b9";
+	linkedInLink.textContent = "Florent PERGOUD";
+	paragraphOne.appendChild(linkedInLink);
+	let textTwo = document.createTextNode(". The source code is licensed ");
+	paragraphOne.appendChild(textTwo);
+	let mitLink = document.createElement("a");
+		mitLink.href = "http://opensource.org/licenses/mit-license.php";
+		mitLink.textContent = "MIT";
+	paragraphOne.appendChild(mitLink);
+	let textThree = document.createTextNode(".");
+	paragraphOne.appendChild(textThree);
+	divContent.appendChild(paragraphOne);
+
+	let paragraphTwo = document.createElement("p");
+	let textIssue = document.createTextNode("To report a bug please use ");
+	paragraphTwo.appendChild(textIssue);
+	let urlIssue = document.createElement("a");
+		urlIssue.href = "https://github.com/flopshoubox/YouTimeStamp/issues";
+		urlIssue.textContent = "Github issues";
+	paragraphTwo.appendChild(urlIssue);
+	let textIssueTwo = document.createTextNode(" section of ");
+	paragraphTwo.appendChild(textIssueTwo);
+	let urlGithub = document.createElement("a");
+		urlGithub.href = "https://github.com/flopshoubox/YouTimeStamp";
+		urlGithub.textContent = " GitHub page.";
+	paragraphTwo.appendChild(urlGithub);
+	
+	divContent.appendChild(paragraphTwo);
+	divContainer.appendChild(divContent);
+	footer.appendChild(divContainer);
+	document.body.appendChild(footer);
+
+/*
+    <footer class="footer">
+      <div class="container">
+        <div class="content has-text-centered">
+          <p>
+            <strong>Bulma</strong>
+             by 
+            <a href="https://jgthms.com">Jeremy Thomas</a>
+            . The source code is licensed
+            <a href="http://opensource.org/licenses/mit-license.php">MIT</a>
+            . The website content is licensed 
+            <a href="http://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY NC SA 4.0</a>.
+          </p>
+        </div>
+      </div>
+  </footer>
+*/
+
+}
+
 const windowLoader = async () => {
 	console.log("popup - windowLoader - launched");
 	compatibilityCheck = await browser.runtime.sendMessage({message: "compatibilityCheck" , senderScript: "actionPopUp"});
@@ -295,7 +364,20 @@ const windowLoader = async () => {
 	else{
 		console.log("titleUpdater");
 		titleUpdater("Please choose a tab to track by clicking on the play button on the right of the URL bar while beeing on a YouTube video page");
+		subTitleUpdater("Check below for an example of working description :\n");
+		let subtitle = document.getElementById("subtitle");
+		let imgDiv = document.createElement("div");
+		imgDiv.classList.add("card");
+		imgDiv.classList.add('large');
+		let imgTag = document.createElement("img");
+		imgTag.src = "help.png";
+		imgTag.alt = "Help image";
+		imgTag.classList.add("section");
+		imgTag.classList.add("media");
+		imgDiv.appendChild(imgTag);
+		subtitle.appendChild(imgDiv);
 	}
+	footerCreator();
 }
 
 windowLoader();

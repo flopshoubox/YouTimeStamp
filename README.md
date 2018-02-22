@@ -2,6 +2,9 @@
 
 This web extension allow you to navigate through a popup into Youtube videos and more precisely through timestamps added in the video's description.
 
+For now available for :
+- [Firefox](https://addons.mozilla.org/addon/youtimestamps/)
+
 ## Getting Started
 
 These instructions will get you a copy of the project up and running on your local machine for development and testing purposes. See deployment for notes on how to deploy the project on a live system.
@@ -58,7 +61,6 @@ npm run build
 ## Authors
 
 * **Florent PERGOUD** - *Initial work* - [Flopshoubox](https://github.com/flopshoubox)
-
 
 ## License
 
