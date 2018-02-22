@@ -15,24 +15,10 @@ First, you have to install Node.js and Npm -> https://nodejs.org/en/
 
 ### Installing
 
-A step by step series of examples that tell you have to get a development env running:
+To install all the dependencies please run while beeing in the project folder :
 
-In the project folder, get all the npm dependencies :
 ```
 npm install
-```
-
-Then add [web-ext](https://developer.mozilla.org/en-US/Add-ons/WebExtensions/Getting_started_with_web-ext), the package who will allow you to run the extension in a firefox borwser and update it when you change the extension files.
-
-```
-npm install --save-dev web-ext
-```
-
-You will also need [webpack](https://webpack.js.org/) a package that will allow you to bundle all the ressources of the extension into files that can be loaded in the extension.
-
-```
-npm install --save-dev webpack
-npm i -D copy-webpack-plugin
 ```
 
 You are now ready to dev !
