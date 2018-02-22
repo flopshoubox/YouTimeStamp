@@ -10,11 +10,15 @@ let currentlyPlayingNumber = 0;
 let textTitleHThree;
 let fullButtonsList = [
 	{	buttonName: "skip_previous",
-	 		action: "previousVideo"},
+	 		action: "previousVideo",
+	 		title : "Previous video"},
+
 	{	buttonName: "fast_rewind",
-	 		action: "previousSong" },
+	 		action: "previousSong",
+	 		title : "Previous song"},
 	{	buttonName: "pause",
 	 		action: "pause",
+	 		title : "Play/pause",
 	 		callBack: (button) => {
 	 			if (button.firstChild.innerText == "pause") { //If it's playing
 					browser.runtime.sendMessage({message: "action" , senderScript: "actionPopUp", action:{ toDo: "pause"}})
@@ -33,15 +37,19 @@ let fullButtonsList = [
 					});
 	 			}}},
 	{	buttonName: "fast_forward",
-	 		action: "nextSong"},
+	 		action: "nextSong",
+	 		title : "Next song"},
 	{	buttonName: "skip_next",
-	 		action: "nextVideo"}
+	 		action: "nextVideo",
+	 		title : "Next video"}
 	];
 let noTsButtonsList = [
 	{	buttonName: "skip_previous",
-	 		action: "previousVideo"},
+	 		action: "previousVideo",
+	 		title : "Previous video"},
 	{	buttonName: "pause",
 	 		action: "pause",
+	 		title : "Play/pause",
 	 		callBack: (button) => {
 	 			if (button.firstChild.innerText == "pause") { //If it's playing
 					browser.runtime.sendMessage({message: "action" , senderScript: "actionPopUp", action:{ toDo: "pause"}})
@@ -60,7 +68,8 @@ let noTsButtonsList = [
 					});
 	 			}}},
 	{	buttonName: "skip_next",
-	 		action: "nextVideo"}
+	 		action: "nextVideo",
+	 		title : "Next video"}
 	]
 
 const onLinkClick = (element) => {
@@ -95,6 +104,7 @@ const buttonsCardCreator = (buttonsToCreate) => {
 		iTag.classList.add('material-icons');
 		iTag.innerText = buttonsToCreate[i].buttonName;
 		button.appendChild(iTag);
+		button.title = buttonsToCreate[i].title;
 		button.addEventListener("click", () => {
 			browser.runtime.sendMessage({message: "action" , senderScript: "actionPopUp", action:{ toDo: buttonsToCreate[i].action}})
 			.then(answer => {
@@ -161,6 +171,7 @@ const titleCardCreator = () => {
 	titleDiv.classList.add("section");
 	let titleHThree = document.createElement("h3");
 	titleHThree.id = "title";
+	titleHThree.style[`text-align`] = "center";
 	textTitleHThree = document.createTextNode(" "); 
 	titleHThree.appendChild(textTitleHThree);
 	let subtitlePart = document.createElement("h4");
@@ -187,7 +198,7 @@ const subTitleUpdater = (inputText) => {
 	document.getElementById("subtitle").innerHTML = inputText;
 }
 
-const tsCardCreator = () => {
+const tsCardCreator = (title) => {
 	console.log("popup - tsCardCreator - launched");
 	let tsCardDiv = document.createElement("div");
 	tsCardDiv.classList.add('card');
@@ -195,8 +206,9 @@ const tsCardCreator = () => {
 	let tsDiv = document.createElement("div");
 	tsDiv.classList.add("section");
 	let tsHThree = document.createElement("h3");
-	let textTsHThree = document.createTextNode("Time stamps");
+	let textTsHThree = document.createTextNode(title);
 	tsHThree.appendChild(textTsHThree);
+	tsHThree.style[`text-align`] = "center";
 	let tsP = document.createElement("p");
 	tsP.id = "timeStamps";
 	tsDiv.appendChild(tsHThree);
@@ -245,6 +257,11 @@ const tsUpdater = async () => {
 		console.log("don't has childNodes");
 		currentTsp.appendChild(tempOl);
 	}
+	if (timeStamps.length > 0) {
+		let hthree = document.getElementsByTagName("h3")[1];
+		hthree.textContent = "Timestamps";
+		hthree.style[`text-align`] = "left"; 
+	}
 }
 
 const windowLoader = async () => {
@@ -263,7 +280,7 @@ const windowLoader = async () => {
 		if (compatibilityCheck.compatible) {
 			buttonsCardCreator(fullButtonsList);
 			console.log("tsCardCreator");
-			tsCardCreator();
+			tsCardCreator("Time stamps");
 			console.log("tsUpdater");
 			await tsGetter();
 			await tsUpdater();
@@ -271,12 +288,13 @@ const windowLoader = async () => {
 		else{
 			console.log("subTitleUpdater");
 			buttonsCardCreator(noTsButtonsList);
+			console.log("tsCardCreator");
+			tsCardCreator("No timestamp on this video");
 		}
 	}
 	else{
 		console.log("titleUpdater");
-		titleUpdater("No choosen tab");
-		subtitlePart.textContent = "Please choose a tab to track by clicking on the play button on the right of the URL bar while beeing on a YouTube page";
+		titleUpdater("Please choose a tab to track by clicking on the play button on the right of the URL bar while beeing on a YouTube video page");
 	}
 }
 

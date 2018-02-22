@@ -85,21 +85,18 @@ const updateTimerInfos = async () => {
 	videoCurrentTime = secondToDHMS(video.currentTime);
 	videoDuration = await secondToDHMS(video.duration);
 	let compatibility = false;
-	if (timeStamps.length != 0) {
-		for (let i = 0; i < timeStamps.length; i++) {	
-			currentlyPlayingNumber = i;
-			if (video.currentTime  < timeStamps[i].seconds) {
-				break;
-			}
-			currentlyPlayingNumber ++;
-			currentlyPlayingDesc = timeStamps[i].description;
-
+	currentlyPlayingNumber = 0;
+	currentlyPlayingDesc = "";
+	for (let i = 0; i < timeStamps.length; i++) {	
+		currentlyPlayingNumber = i;
+		if (video.currentTime  < timeStamps[i].seconds) {
+			break;
 		}
+		currentlyPlayingNumber ++;
+		currentlyPlayingDesc = timeStamps[i].description;
+
 	}
-	else{
-		currentlyPlayingNumber = 0;
-		currentlyPlayingDesc = "";
-	}
+
 }
 
 const updateNextVideoInfos = async () => {

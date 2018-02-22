@@ -15,7 +15,7 @@
 
 	"page_action" : {
 	    "browser_style": true,
-	    "default_icon" : "/pageAction/playNav-grey.png",
+	    "default_icon" : "/pageAction/playToSelect.png",
 	    "default_title": "YouTimeStamp"
 	 },
 

@@ -32,10 +32,10 @@ const handleUpdated = (tabId, changeInfo, tabInfo) => {
 			setTimeout(() => {
 				browser.pageAction.show(tabId);
 				if (activeYoutubeTabID == tabId) {
-					browser.pageAction.setIcon({tabId: tabId, path: "../pageAction/playNav-blue.png"});
+					browser.pageAction.setIcon({tabId: tabId, path: "../pageAction/playSelected.png"});
 					hasTimeStampsCheck()
 				}
-			}, 2000);
+			}, 3000);
 		}
 		else{
 			browser.pageAction.hide(tabId);
@@ -52,17 +52,17 @@ const handlePageActionClick = async (tab) => {
 
 	if (activeYoutubeTabID != tab.id) {
 		browser.tabs.sendMessage(activeYoutubeTabID,{message: "noMoreYou"});
-		browser.pageAction.setIcon({tabId: activeYoutubeTabID, path: "../pageAction/playNav-grey.png"});
+		browser.pageAction.setIcon({tabId: activeYoutubeTabID, path: "../pageAction/playToSelect.png"});
 
 		browser.tabs.sendMessage(tab.id,{message: "choosingYou"});
-		browser.pageAction.setIcon({tabId: tab.id, path: "../pageAction/playNav-blue.png"});
+		browser.pageAction.setIcon({tabId: tab.id, path: "../pageAction/playSelected.png"});
 		activeYoutubeTabID = tab.id;
 		hasSelectedPage = true;
 		await hasTimeStampsCheck();
 	}
 	else{
 		browser.tabs.sendMessage(tab.id,{message: "noMoreYou"});
-		browser.pageAction.setIcon({tabId: tab.id, path: "../pageAction/playNav-grey.png"});
+		browser.pageAction.setIcon({tabId: tab.id, path: "../pageAction/playToSelect.png"});
 		initVar();
 		browser.browserAction.setBadgeText({text: ''});
 	}
